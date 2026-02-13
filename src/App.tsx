@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react'
-import BusStops from './components/BusStops'
-import Weather from './components/Weather'
-import { registerServiceWorker } from './services/pwaService'
-import './App.css'
+import { useEffect, useState } from 'react';
+import BusStops from './components/BusStops';
+import Weather from './components/Weather';
+import { registerServiceWorker } from './services/pwaService';
+import './App.css';
 
 function App() {
-  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Register service worker for PWA
-    registerServiceWorker()
+    registerServiceWorker();
 
     // Get user's location
     if (navigator.geolocation) {
@@ -19,23 +19,21 @@ function App() {
           setLocation({
             lat: position.coords.latitude,
             lon: position.coords.longitude,
-          })
+          });
         },
         (err) => {
-          setError(
-            'Unable to get your location. Please enable location services.',
-          )
-          console.error(err)
+          setError('Unable to get your location. Please enable location services.');
+          console.error(err);
           // Set default location (Helsinki)
-          setLocation({ lat: 60.1699, lon: 24.9384 })
+          setLocation({ lat: 60.1699, lon: 24.9384 });
         },
-      )
+      );
     } else {
-      setError('Geolocation is not supported by your browser')
+      setError('Geolocation is not supported by your browser');
       // Set default location (Helsinki)
-      setLocation({ lat: 60.1699, lon: 24.9384 })
+      setLocation({ lat: 60.1699, lon: 24.9384 });
     }
-  }, [])
+  }, []);
 
   return (
     <div className="app">
@@ -75,7 +73,7 @@ function App() {
         </p>
       </footer>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

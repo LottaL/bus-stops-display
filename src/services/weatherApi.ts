@@ -1,22 +1,22 @@
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError } from 'axios';
 
-const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast'
+const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
 
 export interface WeatherData {
-  time: string[]
-  temperature_2m: number[]
-  weather_code: number[]
-  precipitation: number[]
-  wind_speed_10m: number[]
+  time: string[];
+  temperature_2m: number[];
+  weather_code: number[];
+  precipitation: number[];
+  wind_speed_10m: number[];
 }
 
 export interface HourlyForecast {
-  time: string
-  temperature: number
-  weatherCode: number
-  precipitation: number
-  windSpeed: number
-  description: string
+  time: string;
+  temperature: number;
+  weatherCode: number;
+  precipitation: number;
+  windSpeed: number;
+  description: string;
 }
 
 /**
@@ -24,25 +24,21 @@ export interface HourlyForecast {
  * @param lat Latitude
  * @param lon Longitude
  */
-export async function getWeatherForecast(
-  lat: number,
-  lon: number,
-): Promise<HourlyForecast[]> {
+export async function getWeatherForecast(lat: number, lon: number): Promise<HourlyForecast[]> {
   try {
     const response = await axios.get(WEATHER_API_URL, {
       params: {
         latitude: lat,
         longitude: lon,
-        hourly:
-          'temperature_2m,weather_code,precipitation,wind_speed_10m',
+        hourly: 'temperature_2m,weather_code,precipitation,wind_speed_10m',
         forecast_hours: 6,
         timezone: 'auto',
         temperature_unit: 'celsius',
       },
-    })
+    });
 
-    const hourly = response.data.hourly
-    const forecasts: HourlyForecast[] = []
+    const hourly = response.data.hourly;
+    const forecasts: HourlyForecast[] = [];
 
     for (let i = 0; i < Math.min(6, hourly.time.length); i++) {
       forecasts.push({
@@ -52,14 +48,14 @@ export async function getWeatherForecast(
         precipitation: hourly.precipitation[i],
         windSpeed: hourly.wind_speed_10m[i],
         description: getWeatherDescription(hourly.weather_code[i]),
-      })
+      });
     }
 
-    return forecasts
+    return forecasts;
   } catch (error) {
-    const axiosError = error as AxiosError
-    console.error('Error fetching weather:', axiosError.message)
-    throw new Error('Failed to fetch weather data')
+    const axiosError = error as AxiosError;
+    console.error('Error fetching weather:', axiosError.message);
+    throw new Error('Failed to fetch weather data');
   }
 }
 
@@ -92,29 +88,29 @@ export function getWeatherDescription(code: number): string {
     95: 'Thunderstorm',
     96: 'Thunderstorm with slight hail',
     99: 'Thunderstorm with heavy hail',
-  }
-  return descriptions[code] || 'Unknown'
+  };
+  return descriptions[code] || 'Unknown';
 }
 
 /**
  * Get weather emoji based on weather code
  */
 export function getWeatherEmoji(code: number): string {
-  if (code === 0) return '☀️'
-  if (code === 1 || code === 2) return '⛅'
-  if (code === 3) return '☁️'
-  if (code === 45 || code === 48) return '🌫️'
-  if (code >= 51 && code <= 55) return '🌧️'
-  if (code >= 61 && code <= 82) return '🌧️'
-  if (code >= 71 && code <= 86) return '❄️'
-  if (code >= 95 && code <= 99) return '⛈️'
-  return '🌡️'
+  if (code === 0) return '☀️';
+  if (code === 1 || code === 2) return '⛅';
+  if (code === 3) return '☁️';
+  if (code === 45 || code === 48) return '🌫️';
+  if (code >= 51 && code <= 55) return '🌧️';
+  if (code >= 61 && code <= 82) return '🌧️';
+  if (code >= 71 && code <= 86) return '❄️';
+  if (code >= 95 && code <= 99) return '⛈️';
+  return '🌡️';
 }
 
 /**
  * Format timestamp to readable time
  */
 export function formatTime(timestamp: string): string {
-  const date = new Date(timestamp)
-  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
