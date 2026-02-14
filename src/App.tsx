@@ -1,78 +1,53 @@
+import { Box, Container, Grid, Link, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import BusStops from './components/BusStops';
-import Weather from './components/Weather';
 import { registerServiceWorker } from './services/pwaService';
-import './App.css';
 
 function App() {
-  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Register service worker for PWA
     registerServiceWorker();
-
-    // Get user's location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-          });
-        },
-        (err) => {
-          setError('Unable to get your location. Please enable location services.');
-          console.error(err);
-          // Set default location (Helsinki)
-          setLocation({ lat: 60.1699, lon: 24.9384 });
-        },
-      );
-    } else {
-      setError('Geolocation is not supported by your browser');
-      // Set default location (Helsinki)
-      setLocation({ lat: 60.1699, lon: 24.9384 });
-    }
   }, []);
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>🚌 Bus Stops & Weather</h1>
-        <p>Real-time information for your commute</p>
-      </header>
+    <Container className="app-container" maxWidth="md">
+      <Box className="time-header" textAlign="center" p={2}>
+        <Typography variant="h4" component="h1">
+          {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </Typography>
+      </Box>
+      <Grid container spacing={2} className="app-main">
+        {/* <Grid size={{ xs: 12, lg: 6 }}>{location && <Weather location={location} />}</Grid> */}
+        <Grid size={{ xs: 12, lg: 6 }}>
+          <BusStops />
+        </Grid>
+      </Grid>
 
-      <main className="app-main">
-        {error && <div className="error-banner">{error}</div>}
-
-        <div className="content-grid">
-          {location && (
-            <>
-              <section className="section">
-                <Weather location={location} />
-              </section>
-              <section className="section">
-                <BusStops location={location} />
-              </section>
-            </>
-          )}
-          {!location && <p className="loading">Loading your location...</p>}
-        </div>
-      </main>
-
-      <footer className="app-footer">
-        <p>
+      <Box className="app-footer">
+        <Typography>
           Data from{' '}
-          <a href="https://digitransit.fi" target="_blank" rel="noopener noreferrer">
+          <Typography
+            component={Link}
+            href="https://digitransit.fi"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Digitransit
-          </a>{' '}
+          </Typography>{' '}
           and{' '}
-          <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer">
+          <Typography
+            component={Link}
+            href="https://open-meteo.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Open-Meteo
-          </a>
-        </p>
-      </footer>
-    </div>
+          </Typography>
+        </Typography>
+      </Box>
+    </Container>
   );
 }
 

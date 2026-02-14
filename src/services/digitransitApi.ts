@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, GenericAbortSignal } from 'axios';
 
 function isObject(u: unknown): u is Record<string, unknown> {
   return typeof u === 'object' && u !== null;
@@ -16,14 +16,6 @@ const DIGITRANSIT_GRAPHQL_URL = isDevelopment
 // Get API key from environment - required for Digitransit API (since 31.1.2024)
 // Register at https://portal-api.digitransit.fi/ to get your API key
 const DIGITRANSIT_API_KEY = import.meta.env.VITE_DIGITRANSIT_API_KEY || '';
-
-// Log for debugging (remove in production)
-if (typeof window !== 'undefined') {
-  console.log('[Digitransit API] API Key loaded:', DIGITRANSIT_API_KEY ? '✓ Present' : '✗ Missing');
-  if (DIGITRANSIT_API_KEY) {
-    console.log('[Digitransit API] Key length:', DIGITRANSIT_API_KEY.length, 'characters');
-  }
-}
 
 export interface BusStop {
   id: string;
@@ -54,10 +46,15 @@ export interface NearestStopsResponse {
  * @param stopNames Array of stop names (e.g., ['Kalteentie', 'Mätäspolku'])
  * @param numberOfDepartures Number of departures to fetch per stop (default 5)
  */
-export async function getStopsByNames(
-  stopNames: string[],
-  numberOfDepartures: number = 5,
-): Promise<BusStop[]> {
+export async function getStopsByNames({
+  stopNames,
+  numberOfDepartures = 5,
+  abortSignal,
+}: {
+  stopNames: string[];
+  numberOfDepartures?: number;
+  abortSignal: GenericAbortSignal;
+}): Promise<BusStop[]> {
   if (!stopNames || stopNames.length === 0) {
     return [];
   }
@@ -101,12 +98,13 @@ export async function getStopsByNames(
 
     if (DIGITRANSIT_API_KEY) {
       headers['digitransit-subscription-key'] = DIGITRANSIT_API_KEY;
-      console.log('[Digitransit API] Request includes API key via header ✓');
     }
 
-    console.log('[Digitransit API] Fetching stops by names:', stopNames);
-    console.log('[Digitransit API] Query being sent:', query);
-    const response = await axios.post(DIGITRANSIT_GRAPHQL_URL, { query }, { headers });
+    const response = await axios.post(
+      DIGITRANSIT_GRAPHQL_URL,
+      { query },
+      { headers, signal: abortSignal },
+    );
 
     if (response.data.errors) {
       console.error('[Digitransit API] GraphQL errors:', response.data.errors);
@@ -119,12 +117,6 @@ export async function getStopsByNames(
       });
       throw new Error(`API error: ${errors.join(', ')}`);
     }
-
-    // Debug: Log the raw response
-    console.log(
-      '[Digitransit API] Raw response from stops query:',
-      JSON.stringify(response.data, null, 2),
-    );
 
     // Map GraphQL response to our BusStop interface
     // Note: stops() query returns results directly as arrays, not wrapped in edges
@@ -194,8 +186,6 @@ export async function getStopsByNames(
           }),
       );
 
-    console.log('[Digitransit API] Successfully fetched', stops.length, 'stops by names');
-    console.log('[Digitransit API] Mapped stops from name search:', JSON.stringify(stops, null, 2));
     return stops;
   } catch (error) {
     const axiosError = error as AxiosError;
@@ -214,10 +204,15 @@ export async function getStopsByNames(
  * @param gtfsIds Array of GTFS stop IDs (e.g., ['HSL:1414149', 'HSL:1414154'])
  * @param numberOfDepartures Number of departures to fetch per stop (default 5)
  */
-export async function getStopsByIds(
-  gtfsIds: string[],
-  numberOfDepartures: number = 5,
-): Promise<BusStop[]> {
+export async function getStopsByIds({
+  gtfsIds,
+  numberOfDepartures = 5,
+  abortSignal,
+}: {
+  gtfsIds: string[];
+  numberOfDepartures?: number;
+  abortSignal: GenericAbortSignal;
+}): Promise<BusStop[]> {
   if (!gtfsIds || gtfsIds.length === 0) {
     return [];
   }
@@ -260,11 +255,13 @@ export async function getStopsByIds(
 
     if (DIGITRANSIT_API_KEY) {
       headers['digitransit-subscription-key'] = DIGITRANSIT_API_KEY;
-      console.log('[Digitransit API] Request includes API key via header ✓');
     }
 
-    console.log('[Digitransit API] Fetching stops by IDs:', gtfsIds);
-    const response = await axios.post(DIGITRANSIT_GRAPHQL_URL, { query }, { headers });
+    const response = await axios.post(
+      DIGITRANSIT_GRAPHQL_URL,
+      { query },
+      { headers, signal: abortSignal },
+    );
 
     if (response.data.errors) {
       console.error('[Digitransit API] GraphQL errors:', response.data.errors);
@@ -296,7 +293,6 @@ export async function getStopsByIds(
           : [],
       }));
 
-    console.log('[Digitransit API] Successfully fetched', stops.length, 'stops by IDs');
     return stops;
   } catch (error) {
     const axiosError = error as AxiosError;
@@ -318,13 +314,21 @@ export async function getStopsByIds(
  * @param limit Number of stops to return (default 10)
  * @param numberOfDepartures Number of departures to fetch per stop (default 5)
  */
-export async function getNearestBusStops(
-  lat: number,
-  lon: number,
-  radius: number = 500,
-  limit: number = 10,
-  numberOfDepartures: number = 5,
-): Promise<BusStop[]> {
+export async function getNearestBusStops({
+  lat,
+  lon,
+  radius = 100,
+  limit = 10,
+  numberOfDepartures = 5,
+  abortSignal,
+}: {
+  lat: number;
+  lon: number;
+  radius?: number;
+  limit?: number;
+  numberOfDepartures?: number;
+  abortSignal: GenericAbortSignal;
+}): Promise<BusStop[]> {
   // GraphQL query to find nearest stops
   const query = `
     query {
@@ -364,7 +368,6 @@ export async function getNearestBusStops(
     // Add API key as header (required for Digitransit production API)
     if (DIGITRANSIT_API_KEY) {
       headers['digitransit-subscription-key'] = DIGITRANSIT_API_KEY;
-      console.log('[Digitransit API] Request includes API key via header ✓');
     } else {
       console.warn(
         'Digitransit API key not found. Please set VITE_DIGITRANSIT_API_KEY environment variable. ' +
@@ -373,8 +376,11 @@ export async function getNearestBusStops(
       );
     }
 
-    console.log('[Digitransit API] Sending GraphQL query to Routing API v2');
-    const response = await axios.post(DIGITRANSIT_GRAPHQL_URL, { query }, { headers });
+    const response = await axios.post(
+      DIGITRANSIT_GRAPHQL_URL,
+      { query },
+      { headers, signal: abortSignal },
+    );
 
     if (response.data.errors) {
       console.error('[Digitransit API] GraphQL errors:', response.data.errors);
@@ -387,9 +393,6 @@ export async function getNearestBusStops(
       });
       throw new Error(`API error: ${errors.join(', ')}`);
     }
-
-    // Map GraphQL response to our BusStop interface
-    console.log('[Digitransit API] Raw response:', JSON.stringify(response.data, null, 2));
 
     const nearest = (response.data?.data?.nearest ?? {}) as Record<string, unknown>;
     const edges = Array.isArray(nearest['edges']) ? (nearest['edges'] as unknown[]) : [];
@@ -412,8 +415,6 @@ export async function getNearestBusStops(
         };
       });
 
-    console.log('[Digitransit API] Successfully fetched', stops.length, 'stops');
-    console.log('[Digitransit API] Mapped stops:', JSON.stringify(stops, null, 2));
     return stops;
   } catch (error) {
     const axiosError = error as AxiosError;
