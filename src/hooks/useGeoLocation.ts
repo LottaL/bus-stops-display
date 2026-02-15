@@ -1,9 +1,13 @@
 import { useState } from 'react';
+import { Mode } from '../components/BusStops';
 
-export const useGeoLocation = (defaultLocation: { lat: number; lon: number } | null) => {
+export const useGeoLocation = (
+  mode: Mode,
+  defaultLocation: { lat: number; lon: number } | null,
+) => {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  if (navigator.geolocation) {
+  if (mode === 'nearest' && navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setLocation({

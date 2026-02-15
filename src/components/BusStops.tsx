@@ -2,10 +2,14 @@ import { useEffect, useState } from 'react';
 import { useBusStops } from '../hooks/useBusStops';
 import { formatArrivalTime, getMinutesUntilArrival } from '../services/digitransitApi';
 import './BusStops.css';
-import { Grid } from '@mui/material';
+import { Box, Card, CardContent, Grid, Typography } from '@mui/material';
+import { useGeoLocation } from '../hooks/useGeoLocation';
+import { getDistance } from '../utils/getDistance';
+
+export type Mode = 'nearest' | 'specific' | 'byName';
 
 export default function BusStops() {
-  const [mode, setMode] = useState<'nearest' | 'specific' | 'byName'>('nearest');
+  const [mode, setMode] = useState<Mode>('nearest');
   const [selectedStopIds, setSelectedStopIds] = useState<string[]>([]);
   const [selectedStopNames, setSelectedStopNames] = useState<string[]>([]);
   const [numberOfDepartures, setNumberOfDepartures] = useState(5);
@@ -19,7 +23,8 @@ export default function BusStops() {
     gtfsIds: selectedStopIds,
     stopNames: selectedStopNames,
   });
-  console.log('BusStops component stops:', stops);
+
+  const { location } = useGeoLocation(mode, null);
 
   useEffect(() => {
     // Parse query parameters
@@ -63,32 +68,47 @@ export default function BusStops() {
     <Grid size={{ xs: 12, lg: 6 }} direction="row" className="bus-stops">
       {stops.map((stop) => (
         <Grid key={stop.id} size={6} className="stop-card">
-          <div className="stop-header">
-            <h3>{stop.name}</h3>
-            <span className="stop-distance">~{Math.round(Math.random() * 500)}m</span>
-          </div>
+          <Card className="stop-card-content" variant="outlined">
+            <CardContent>
+              {location && (
+                <Typography gutterBottom sx={{ color: 'text.secondary', fontSize: 14 }}>
+                  ~{getDistance(location, { lat: stop.lat, lon: stop.lon })} m
+                </Typography>
+              )}
+              <Typography variant="h5" component="div">
+                {stop.name}
+              </Typography>
+              {stop.stoptimesWithoutPatterns.length > 0 ? (
+                <Box className="departures">
+                  {stop.stoptimesWithoutPatterns
+                    .slice(0, numberOfDepartures)
+                    .map((stoptime, idx) => {
+                      const minutesUntil = getMinutesUntilArrival(stoptime.scheduledArrival);
+                      const arrivalTime = formatArrivalTime(stoptime.scheduledArrival);
 
-          {stop.stoptimesWithoutPatterns.length > 0 ? (
-            <div className="departures">
-              <div className="departures-title">Next departures:</div>
-              {stop.stoptimesWithoutPatterns.slice(0, numberOfDepartures).map((stoptime, idx) => {
-                const minutesUntil = getMinutesUntilArrival(stoptime.scheduledArrival);
-                const arrivalTime = formatArrivalTime(stoptime.scheduledArrival);
-
-                return (
-                  <div key={idx} className={`departure ${stoptime.realtime ? 'realtime' : ''}`}>
-                    <span className="route">{stoptime.trip?.route?.shortName ?? '?'}</span>
-                    <span className="destination">{stoptime.headsign ?? 'Unknown'}</span>
-                    <span className="time">{minutesUntil <= 0 ? 'Now' : `${minutesUntil}m`}</span>
-                    <span className="scheduled">{arrivalTime}</span>
-                    {stoptime.realtime && <span className="realtime-badge">📍 Real-time</span>}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="no-departures">No departures available</div>
-          )}
+                      return (
+                        <div
+                          key={idx}
+                          className={`departure ${stoptime.realtime ? 'realtime' : ''}`}
+                        >
+                          <span className="route">{stoptime.trip?.route?.shortName ?? '?'}</span>
+                          <span className="destination">{stoptime.headsign ?? 'Unknown'}</span>
+                          <span className="time">
+                            {minutesUntil <= 0 ? 'Now' : `${minutesUntil}m`}
+                          </span>
+                          <span className="scheduled">{arrivalTime}</span>
+                          {stoptime.realtime && (
+                            <span className="realtime-badge">📍 Real-time</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                </Box>
+              ) : (
+                <Box className="no-departures">No departures available</Box>
+              )}
+            </CardContent>
+          </Card>
         </Grid>
       ))}
     </Grid>
