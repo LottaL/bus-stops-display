@@ -12,11 +12,8 @@ import {
   Typography,
 } from '@mui/material';
 import { useGeoLocation } from '../hooks/useGeoLocation';
-import {
-  formatArrivalTime,
-  getMinutesUntilArrival,
-  BusStop as Stop,
-} from '../services/digitransitApi';
+import { formatArrivalTime, getMinutesUntilArrival } from '../services/digitransitApi';
+import { BusStop as Stop } from '../schemas/digitransit.schema';
 import { getDistance } from '../utils/getDistance';
 
 interface BusStopProps {
@@ -32,11 +29,13 @@ export const BusStop = ({ stop }: BusStopProps) => {
     ),
     name: stoptime.trip?.route?.shortName ?? '?',
     destination: stoptime.headsign ?? 'Unknown',
-    arrivalMinutes: getMinutesUntilArrival(stoptime.scheduledArrival),
-    arrivalTime: formatArrivalTime(stoptime.scheduledArrival),
+    arrivalMinutes: stoptime.scheduledArrival
+      ? getMinutesUntilArrival(stoptime.scheduledArrival)
+      : null,
+    arrivalTime: stoptime.scheduledArrival ? formatArrivalTime(stoptime.scheduledArrival) : null,
   }));
   return (
-    <Grid key={stop.id} size={{ xs: 6, md: 12 }} className="stop-card">
+    <Grid key={stop.gtfsId} size={{ xs: 6, md: 12 }} className="stop-card">
       <Card className="stop-card-content" variant="outlined">
         <CardContent>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -78,7 +77,7 @@ export const BusStop = ({ stop }: BusStopProps) => {
                       className="arrivalMinutes"
                       align="right"
                     >
-                      {row.arrivalMinutes <= 0 ? (
+                      {!!row.arrivalMinutes && row.arrivalMinutes <= 0 ? (
                         <AccessTimeIcon sx={{ color: 'error.main' }} />
                       ) : (
                         `${row.arrivalMinutes}`

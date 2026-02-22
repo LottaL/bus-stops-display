@@ -1,8 +1,7 @@
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 import { getNearestBusStops, getStopsByIds, getStopsByNames } from '../services/digitransitApi';
-import { useMode } from './useMode';
 import { useGeoLocation } from './useGeoLocation';
+import { useMode } from './useMode';
 
 export const DEFAULT_LOCATION = { lat: 60.1699, lon: 24.9384 }; // Default location (Helsinki)
 
