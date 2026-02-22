@@ -8,5 +8,5 @@ export const getDistance = (
   const dx = (b.lon - a.lon) * metersPerDegreeLon;
   const dy = (b.lat - a.lat) * metersPerDegreeLat;
 
-  return Math.round(Math.sqrt(dx * dx + dy * dy));
+  return Math.ceil(Math.sqrt(dx * dx + dy * dy));
 };

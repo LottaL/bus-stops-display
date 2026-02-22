@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, GenericAbortSignal } from 'axios';
 
 const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
 
@@ -16,6 +16,7 @@ export interface HourlyForecast {
   weatherCode: number;
   precipitation: number;
   windSpeed: number;
+  windDirection?: number;
   description: string;
 }
 
@@ -24,17 +25,21 @@ export interface HourlyForecast {
  * @param lat Latitude
  * @param lon Longitude
  */
-export async function getWeatherForecast(lat: number, lon: number): Promise<HourlyForecast[]> {
+export async function getWeatherForecast(
+  location: { lat: number; lon: number },
+  signal?: GenericAbortSignal,
+): Promise<HourlyForecast[]> {
   try {
     const response = await axios.get(WEATHER_API_URL, {
       params: {
-        latitude: lat,
-        longitude: lon,
-        hourly: 'temperature_2m,weather_code,precipitation,wind_speed_10m',
+        latitude: location.lat,
+        longitude: location.lon,
+        hourly: 'temperature_2m,weather_code,precipitation,wind_speed_10m,winddirection_10m',
         forecast_hours: 6,
         timezone: 'auto',
         temperature_unit: 'celsius',
       },
+      signal,
     });
 
     const hourly = response.data.hourly;
@@ -47,6 +52,7 @@ export async function getWeatherForecast(lat: number, lon: number): Promise<Hour
         weatherCode: hourly.weather_code[i],
         precipitation: hourly.precipitation[i],
         windSpeed: hourly.wind_speed_10m[i],
+        windDirection: hourly.winddirection_10m ? hourly.winddirection_10m[i] : undefined,
         description: getWeatherDescription(hourly.weather_code[i]),
       });
     }
