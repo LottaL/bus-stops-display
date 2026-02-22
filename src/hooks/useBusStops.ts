@@ -1,5 +1,5 @@
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
-import { getNearestBusStops, getStopsByIds, getStopsByNames } from '../services/digitransitApi';
+import { getNearestBusStops, getStopsByNamesOrIds } from '../services/digitransitApi';
 import { useGeoLocation } from './useGeoLocation';
 import { useMode } from './useMode';
 
@@ -66,14 +66,16 @@ export const useBusStopsByIds = (gtfsIds: string[], numberOfDepartures: number) 
   useQuery({
     enabled: gtfsIds.length > 0,
     queryKey: ['busStopsByIds', gtfsIds, numberOfDepartures],
-    queryFn: ({ signal }) => getStopsByIds({ gtfsIds, numberOfDepartures, abortSignal: signal }),
+    queryFn: ({ signal }) =>
+      getStopsByNamesOrIds({ gtfsIds, numberOfDepartures, abortSignal: signal }),
     refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
   });
 
 export const useSuspenseBusStopsByIds = (gtfsIds: string[], numberOfDepartures: number) =>
   useSuspenseQuery({
     queryKey: ['busStopsByIds', gtfsIds, numberOfDepartures],
-    queryFn: ({ signal }) => getStopsByIds({ gtfsIds, numberOfDepartures, abortSignal: signal }),
+    queryFn: ({ signal }) =>
+      getStopsByNamesOrIds({ gtfsIds, numberOfDepartures, abortSignal: signal }),
     refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
   });
 
@@ -82,7 +84,7 @@ export const useBusStopsByNames = (stopNames: string[], numberOfDepartures: numb
     enabled: stopNames.length > 0,
     queryKey: ['busStopsByNames', stopNames, numberOfDepartures],
     queryFn: async ({ signal }) =>
-      getStopsByNames({ stopNames, numberOfDepartures, abortSignal: signal }),
+      getStopsByNamesOrIds({ stopNames, numberOfDepartures, abortSignal: signal }),
     refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
   });
 };
@@ -91,6 +93,6 @@ export const useSuspenseBusStopsByNames = (stopNames: string[], numberOfDepartur
   useSuspenseQuery({
     queryKey: ['busStopsByNames', stopNames, numberOfDepartures],
     queryFn: async ({ signal }) =>
-      getStopsByNames({ stopNames, numberOfDepartures, abortSignal: signal }),
+      getStopsByNamesOrIds({ stopNames, numberOfDepartures, abortSignal: signal }),
     refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
   });
