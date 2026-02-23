@@ -7,6 +7,8 @@ export const useMode = () => {
   const [selectedStopIds, setSelectedStopIds] = useState<string[]>([]);
   const [selectedStopNames, setSelectedStopNames] = useState<string[]>([]);
   const [numberOfDepartures, setNumberOfDepartures] = useState(5);
+  const [distance, setDistance] = useState(500);
+  const [numberOfStops, setNumberOfStops] = useState(6);
 
   useEffect(() => {
     // Parse query parameters
@@ -14,6 +16,8 @@ export const useMode = () => {
     const stopsParam = params.get('stops');
     const namesParam = params.get('stopNames');
     const resultsParam = params.get('results');
+    const distanceParam = params.get('distance');
+    const limitParam = params.get('numberOfStops');
 
     // Parse numberOfDepartures from results parameter
     if (resultsParam) {
@@ -39,8 +43,21 @@ export const useMode = () => {
         .filter((id) => id.length > 0);
       setSelectedStopIds(ids);
       setMode('specific');
+    } else {
+      if (distanceParam) {
+        const parsedDistance = parseInt(distanceParam, 10);
+        if (!isNaN(parsedDistance) && parsedDistance > 0) {
+          setDistance(parsedDistance);
+        }
+      }
+      if (limitParam) {
+        const parsedLimit = parseInt(limitParam, 10);
+        if (!isNaN(parsedLimit) && parsedLimit > 0) {
+          setNumberOfStops(parsedLimit);
+        }
+      }
     }
   }, []);
 
-  return { mode, selectedStopIds, selectedStopNames, numberOfDepartures };
+  return { mode, selectedStopIds, selectedStopNames, numberOfDepartures, distance, numberOfStops };
 };

@@ -4,9 +4,9 @@ import { WeatherSlot } from './WeatherSlot';
 import { getTimeAndDate } from '../utils/getLocalTimes';
 
 export default function Weather() {
-  const { data: weather, isLoading, error } = useWeather();
+  const { data: weather, isFetching, error } = useWeather();
 
-  if (isLoading) {
+  if (isFetching) {
     return (
       <Grid size={12} justifyItems="center" className="weather-loading">
         <CircularProgress />

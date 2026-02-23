@@ -7,10 +7,6 @@ import {
   EmptyObject,
 } from '../schemas/digitransit.schema';
 
-function isObject(u: unknown): u is Record<string, unknown> {
-  return typeof u === 'object' && u !== null;
-}
-
 const env = import.meta.env;
 
 // Digitransit Routing API v2 endpoint (current, non-deprecated API)

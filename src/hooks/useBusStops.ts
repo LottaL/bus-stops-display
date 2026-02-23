@@ -13,6 +13,8 @@ export const useBusStops = () => {
     selectedStopIds: gtfsIds,
     selectedStopNames: stopNames,
     mode,
+    distance,
+    numberOfStops,
   } = useMode();
   const busStopsById = useBusStopsByIds(gtfsIds, numberOfDepartures);
   const busStopsByName = useBusStopsByNames(stopNames, numberOfDepartures);
@@ -20,6 +22,8 @@ export const useBusStops = () => {
   const busStopsByLocation = useNearestBusStops(
     mode === 'nearest' ? location : null,
     numberOfDepartures,
+    distance,
+    numberOfStops,
   );
 
   return gtfsIds.length > 0
@@ -32,10 +36,12 @@ export const useBusStops = () => {
 export const useNearestBusStops = (
   location: { lat: number; lon: number } | null,
   numberOfDepartures: number,
+  distance?: number,
+  numberOfStops?: number,
 ) =>
   useQuery({
     enabled: !!location,
-    queryKey: ['busStops', location, numberOfDepartures],
+    queryKey: ['busStops', location, numberOfDepartures, distance, numberOfStops],
     queryFn: ({ signal }) =>
       location &&
       getNearestBusStops({
@@ -43,21 +49,27 @@ export const useNearestBusStops = (
         lon: location.lon,
         numberOfDepartures,
         abortSignal: signal,
+        radius: distance,
+        limit: numberOfStops,
       }),
     refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
   });
 export const useSuspenseNearestBusStops = (
   location: { lat: number; lon: number },
   numberOfDepartures: number,
+  distance?: number,
+  numberOfStops?: number,
 ) =>
   useSuspenseQuery({
-    queryKey: ['busStops', location, numberOfDepartures],
+    queryKey: ['busStops', location, numberOfDepartures, distance, numberOfStops],
     queryFn: ({ signal }) =>
       getNearestBusStops({
         lat: location.lat,
         lon: location.lon,
         numberOfDepartures,
         abortSignal: signal,
+        radius: distance,
+        limit: numberOfStops,
       }),
     refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
   });
