@@ -28,17 +28,28 @@ export const BusStop = z.object({
 
 export type BusStop = z.infer<typeof BusStop>;
 
-export const NearestStops = z.object({
-  stops: z.array(BusStop),
-});
-
-export type NearestStops = z.infer<typeof NearestStops>;
-
-export const DigiTransitStopsResponse = z.object({
+export const DigitransitStopsResponse = z.object({
   data: z.record(z.string(), z.array(BusStop)),
 });
 
-export type DigiTransitStopsResponse = z.infer<typeof DigiTransitStopsResponse>;
+export type DigitransitStopsResponse = z.infer<typeof DigitransitStopsResponse>;
+
+export const EmptyObject = z.object({}).strict();
+export const DigitransitNearestStopsResponse = z.object({
+  data: z.object({
+    nearest: z.object({
+      edges: z.array(
+        z.object({
+          node: z.object({
+            place: z.union([BusStop, EmptyObject]),
+          }),
+        }),
+      ),
+    }),
+  }),
+});
+
+export type DigitransitNearestStopsResponse = z.infer<typeof DigitransitNearestStopsResponse>;
 
 export const DigitransitError = z.object({
   message: z.string(),

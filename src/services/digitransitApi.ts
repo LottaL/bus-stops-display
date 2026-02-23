@@ -2,8 +2,9 @@ import axios, { AxiosError, GenericAbortSignal } from 'axios';
 import {
   BusStop,
   DigitransitErrorResponse,
-  DigiTransitStopsResponse,
-  StopTime,
+  DigitransitNearestStopsResponse,
+  DigitransitStopsResponse,
+  EmptyObject,
 } from '../schemas/digitransit.schema';
 
 function isObject(u: unknown): u is Record<string, unknown> {
@@ -24,10 +25,6 @@ const DIGITRANSIT_GRAPHQL_URL = isDevelopment
 // Get API key from environment - required for Digitransit API (since 31.1.2024)
 // Register at https://portal-api.digitransit.fi/ to get your API key
 const DIGITRANSIT_API_KEY = env.VITE_DIGITRANSIT_API_KEY || '';
-
-export interface NearestStopsResponse {
-  stops: BusStop[];
-}
 
 const getNameOrIdQuery = (
   index: number,
@@ -118,7 +115,7 @@ export async function getStopsByNamesOrIds({
       );
     }
 
-    const dataObj = DigiTransitStopsResponse.safeParse(response.data);
+    const dataObj = DigitransitStopsResponse.safeParse(response.data);
     if (!dataObj.success) {
       console.error('[Digitransit API] Response validation failed:', dataObj.error);
       throw new Error('API error: Response format is invalid');
@@ -216,38 +213,35 @@ export async function getNearestBusStops({
 
     if (response.data.errors) {
       console.error('[Digitransit API] GraphQL errors:', response.data.errors);
-      const errors = (response.data.errors as unknown[]).map((e) => {
-        if (typeof e === 'object' && e !== null) {
-          const msg = (e as Record<string, unknown>)['message'];
-          return typeof msg === 'string' ? msg : JSON.stringify(e);
-        }
-        return String(e);
-      });
-      throw new Error(`API error: ${errors.join(', ')}`);
+      const safeParsedErrors = DigitransitErrorResponse.safeParse(response.data.errors);
+      if (safeParsedErrors.success) {
+        const errorMessages = safeParsedErrors.data.map((e) => e.message).join(', ');
+        throw new Error(`API error: ${errorMessages}`);
+      }
+      throw new Error(
+        `API error: Something went wrong, and the error response could not be parsed. Original errors: ${JSON.stringify(response.data.errors)}`,
+      );
     }
 
-    const nearest = (response.data?.data?.nearest ?? {}) as Record<string, unknown>;
-    const edges = Array.isArray(nearest['edges']) ? (nearest['edges'] as unknown[]) : [];
-    const stops: BusStop[] = edges
-      .filter(
-        (e): e is Record<string, unknown> =>
-          typeof e === 'object' && e !== null && isObject((e as Record<string, unknown>)['node']),
-      )
+    const dataObj = DigitransitNearestStopsResponse.safeParse(response.data);
+    if (!dataObj.success) {
+      console.error('[Digitransit API] Response validation failed:', dataObj.error);
+      throw new Error('API error: Response format is invalid');
+    }
+    const busStops: BusStop[] = dataObj.data.data.nearest.edges
       .map((edge) => {
-        const node = (edge as Record<string, unknown>)['node'] as Record<string, unknown>;
-        const place = isObject(node['place']) ? (node['place'] as Record<string, unknown>) : {};
-        return {
-          gtfsId: typeof place['gtfsId'] === 'string' ? (place['gtfsId'] as string) : '',
-          name: typeof place['name'] === 'string' ? (place['name'] as string) : 'Unknown',
-          lat: typeof place['lat'] === 'number' ? (place['lat'] as number) : 0,
-          lon: typeof place['lon'] === 'number' ? (place['lon'] as number) : 0,
-          stoptimesWithoutPatterns: Array.isArray(place['stoptimesWithoutPatterns'])
-            ? (place['stoptimesWithoutPatterns'] as StopTime[])
-            : [],
-        };
-      });
-
-    return stops;
+        if (EmptyObject.safeParse(edge.node.place).success) {
+          return null;
+        }
+        const stop = BusStop.safeParse(edge.node.place);
+        if (!stop.success) {
+          console.error('[Digitransit API] Stop validation failed:', stop.error);
+          throw new Error('API error: Stop format is invalid');
+        }
+        return stop.data;
+      })
+      .filter((stop): stop is BusStop => stop !== null);
+    return busStops;
   } catch (error) {
     const axiosError = error as AxiosError;
     console.error('[Digitransit API] Request failed:', {
