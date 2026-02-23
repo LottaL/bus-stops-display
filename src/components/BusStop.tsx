@@ -35,7 +35,7 @@ export const BusStop = ({ stop }: BusStopProps) => {
     arrivalTime: stoptime.scheduledArrival ? formatArrivalTime(stoptime.scheduledArrival) : null,
   }));
   return (
-    <Grid key={stop.gtfsId} size={{ xs: 6, md: 12 }} className="stop-card">
+    <Grid key={stop.gtfsId} size={6} className="stop-card">
       <Card className="stop-card-content" variant="outlined">
         <CardContent>
           <Stack direction="row" justifyContent="space-between" alignItems="center">

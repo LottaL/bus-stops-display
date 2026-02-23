@@ -4,7 +4,6 @@ import CloudIcon from '@mui/icons-material/Cloud';
 import CloudySnowingIcon from '@mui/icons-material/CloudySnowing';
 import FoggyIcon from '@mui/icons-material/Foggy';
 import GrainIcon from '@mui/icons-material/Grain';
-import NightsStayIcon from '@mui/icons-material/NightsStay';
 import SunnyIcon from '@mui/icons-material/Sunny';
 import ThunderstormIcon from '@mui/icons-material/Thunderstorm';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
@@ -46,7 +45,17 @@ export const WeatherIcon = ({ forecast }: WeatherIconProps) => {
           </Badge>
         );
       } else {
-        return <NightsStayIcon fontSize="medium" sx={{ color: '#ecd86f' }} />;
+        return (
+          <Badge
+            badgeContent={<BedtimeIcon fontSize="medium" sx={{ color: '#e5dba5' }} />}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+          >
+            <CloudIcon fontSize="medium" />
+          </Badge>
+        );
       }
     }
     case 3:
