@@ -1,73 +1,48 @@
-import { useEffect, useState } from 'react';
-import {
-  getWeatherForecast,
-  HourlyForecast,
-  formatTime,
-  getWeatherEmoji,
-} from '../services/weatherApi';
-import './Weather.css';
+import { Card, CardContent, CircularProgress, Grid, Stack, Typography } from '@mui/material';
+import { useWeather } from '../hooks/useWeather';
+import { WeatherSlot } from './WeatherSlot';
+import { getTimeAndDate } from '../utils/getLocalTimes';
 
-interface WeatherProps {
-  location: { lat: number; lon: number };
-}
+export default function Weather() {
+  const { data: weather, isFetching, error } = useWeather();
 
-export default function Weather({ location }: WeatherProps) {
-  const [forecast, setForecast] = useState<HourlyForecast[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getWeatherForecast(location.lat, location.lon);
-        setForecast(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load weather');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWeather();
-    // Refresh weather every 10 minutes
-    const interval = setInterval(fetchWeather, 10 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [location]);
-
-  if (loading) return <div className="weather-loading">Loading weather...</div>;
-  if (error) return <div className="weather-error">Error: {error}</div>;
-  if (forecast.length === 0) return <div className="weather-empty">No weather data</div>;
-
-  const current = forecast[0];
+  if (isFetching) {
+    return (
+      <Grid size={12} justifyItems="center" className="weather-loading">
+        <CircularProgress />
+      </Grid>
+    );
+  }
+  if (error) {
+    return (
+      <Grid size={12} justifyItems="center" className="weather-error">
+        <Typography variant="body1" color="error">
+          Error: {error.message}
+        </Typography>
+      </Grid>
+    );
+  }
+  if (!weather || weather.length < 2) {
+    return null;
+  }
 
   return (
-    <div className="weather">
-      <h2>🌤️ Weather Forecast (Next 6 Hours)</h2>
-
-      <div className="current-weather">
-        <div className="weather-icon">{getWeatherEmoji(current.weatherCode)}</div>
-        <div className="current-info">
-          <div className="temp">{current.temperature}°C</div>
-          <div className="description">{current.description}</div>
-          <div className="details">
-            <span>💨 {current.windSpeed} km/h</span>
-            <span>💧 {current.precipitation} mm</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="hourly-forecast">
-        {forecast.map((hour, index) => (
-          <div key={index} className="forecast-item">
-            <div className="time">{formatTime(hour.time)}</div>
-            <div className="emoji">{getWeatherEmoji(hour.weatherCode)}</div>
-            <div className="temp">{hour.temperature}°C</div>
-            <div className="wind">{hour.windSpeed} km/h</div>
-          </div>
-        ))}
-      </div>
-    </div>
+    <Grid size={12} className="weather">
+      <Card className="weather-card" variant="outlined">
+        <CardContent>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            {weather.length > 2 &&
+              weather.slice(1).map((weatherPerHour, index) => (
+                <Stack key={index} direction="column" alignItems="center">
+                  <Typography variant="h6" pb={1}>
+                    {getTimeAndDate(new Date(weatherPerHour.time), 'fi-FI').time}
+                  </Typography>
+                  <WeatherSlot key={index} weather={weatherPerHour} />
+                </Stack>
+              ))}
+          </Stack>
+        </CardContent>
+      </Card>
+    </Grid>
   );
 }
