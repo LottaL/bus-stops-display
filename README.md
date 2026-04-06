@@ -36,30 +36,27 @@ A Progressive Web App (PWA) that displays real-time bus stop information and 6-h
 
 - Node.js 16.0.0 or higher
 - npm or yarn
-- **Digitransit API Key** (Required since January 31, 2024)
+- **Digitransit API proxying** (API key required since January 31, 2024)
   - Register at https://portal-api.digitransit.fi/ (free)
-  - See [DIGITRANSIT_API_KEY.md](DIGITRANSIT_API_KEY.md) for detailed instructions
+  - See [https://github.com/LottaL/digitransit-api-proxy](https://github.com/LottaL/digitransit-api-proxy) for example
 
 ### Installation
 
-1. **Get Your Digitransit API Key**
-
-   See [DIGITRANSIT_API_KEY.md](DIGITRANSIT_API_KEY.md) for step-by-step instructions.
-
-2. **Create `.env.local` file**
+1. **Create `.env.local` file**
 
    Copy `.env.local` from the root and add your API key:
+
    ```
    VITE_DIGITRANSIT_API_KEY=your_api_key_here
    ```
 
-3. **Install dependencies**
+2. **Install dependencies**
 
    ```bash
    npm install
    ```
 
-4. **Start development server**
+3. **Start development server**
 
    ```bash
    npm run dev
@@ -67,13 +64,13 @@ A Progressive Web App (PWA) that displays real-time bus stop information and 6-h
 
    The app opens automatically at http://localhost:5173
 
-5. **Build for production**
+4. **Build for production**
 
    ```bash
    npm run build
    ```
 
-4. **Preview production build**
+5. **Preview production build**
    ```bash
    npm run preview
    ```
@@ -106,7 +103,7 @@ package.json         # Dependencies and scripts
 
 ### Environment Variables
 
-The app uses publicly available APIs. The Digitransit API **requires authentication**:
+The app uses publicly available APIs. The Digitransit API **requires authentication** and needs to be proxied to hide the API key:
 
 - **Digitransit API Key** (Required): `VITE_DIGITRANSIT_API_KEY`
   - Register at https://portal-api.digitransit.fi/
@@ -215,6 +212,7 @@ npm run lint
 This means your API key is missing or invalid. **The Digitransit API requires authentication since January 31, 2024.**
 
 **Solution:**
+
 1. Go to [DIGITRANSIT_API_KEY.md](DIGITRANSIT_API_KEY.md) and follow the registration steps
 2. Create or edit `.env.local` in your project root
 3. Add: `VITE_DIGITRANSIT_API_KEY=your_key_here`
@@ -228,6 +226,7 @@ This means your API key is missing or invalid. **The Digitransit API requires au
 You've exceeded rate limits. The API allows ~10 requests per second.
 
 **Solution:**
+
 - The app already includes refresh intervals (30s for buses, 10min for weather)
 - If deploying with high traffic, you may need to upgrade your API subscription
 - Contact digitransit-api@hsl.fi if you need higher limits
@@ -235,6 +234,7 @@ You've exceeded rate limits. The API allows ~10 requests per second.
 ### Bus stops not showing
 
 **Check:**
+
 1. Browser console (F12) for error messages
 2. That `.env.local` has your API key set correctly
 3. That coordinates are within Digitransit coverage (HSL covers Helsinki area)

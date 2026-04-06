@@ -92,14 +92,5 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
-    proxy: {
-      // Proxy Digitransit Routing API v2 requests to avoid CORS issues in development
-      '/api/digitransit': {
-        target: 'https://api.digitransit.fi/routing/v2/hsl/gtfs/v1',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/digitransit/, ''),
-        secure: true,
-      },
-    },
   },
 });

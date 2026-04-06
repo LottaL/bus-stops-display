@@ -2,8 +2,9 @@ import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { getNearestBusStops, getStopsByNamesOrIds } from '../services/digitransitApi';
 import { useGeoLocation } from './useGeoLocation';
 import { useMode } from './useMode';
+import { config } from '../config/config';
 
-export const DEFAULT_LOCATION = { lat: 60.1699, lon: 24.9384 }; // Default location (Helsinki)
+export const DEFAULT_LOCATION = config.defaultLocation; // Default location (Helsinki)
 
 // TODO: Refactor to use a single query with dynamic parameters instead of multiple queries for different modes
 // TODO: Trigger alert if geolocation fails and user is shown bus stops for default location (Helsinki)
@@ -52,7 +53,7 @@ export const useNearestBusStops = (
         radius: distance,
         limit: numberOfStops,
       }),
-    refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
+    refetchInterval: config.digitransitApiProxy.refreshInterval, // Refetch every 60 seconds to keep the data up-to-date
   });
 export const useSuspenseNearestBusStops = (
   location: { lat: number; lon: number },
@@ -71,7 +72,7 @@ export const useSuspenseNearestBusStops = (
         radius: distance,
         limit: numberOfStops,
       }),
-    refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
+    refetchInterval: config.digitransitApiProxy.refreshInterval, // Refetch every 60 seconds to keep the data up-to-date
   });
 
 export const useBusStopsByIds = (gtfsIds: string[], numberOfDepartures: number) =>
@@ -80,7 +81,7 @@ export const useBusStopsByIds = (gtfsIds: string[], numberOfDepartures: number) 
     queryKey: ['busStopsByIds', gtfsIds, numberOfDepartures],
     queryFn: ({ signal }) =>
       getStopsByNamesOrIds({ gtfsIds, numberOfDepartures, abortSignal: signal }),
-    refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
+    refetchInterval: config.digitransitApiProxy.refreshInterval, // Refetch every 60 seconds to keep the data up-to-date
   });
 
 export const useSuspenseBusStopsByIds = (gtfsIds: string[], numberOfDepartures: number) =>
@@ -88,7 +89,7 @@ export const useSuspenseBusStopsByIds = (gtfsIds: string[], numberOfDepartures: 
     queryKey: ['busStopsByIds', gtfsIds, numberOfDepartures],
     queryFn: ({ signal }) =>
       getStopsByNamesOrIds({ gtfsIds, numberOfDepartures, abortSignal: signal }),
-    refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
+    refetchInterval: config.digitransitApiProxy.refreshInterval, // Refetch every 60 seconds to keep the data up-to-date
   });
 
 export const useBusStopsByNames = (stopNames: string[], numberOfDepartures: number) => {
@@ -97,7 +98,7 @@ export const useBusStopsByNames = (stopNames: string[], numberOfDepartures: numb
     queryKey: ['busStopsByNames', stopNames, numberOfDepartures],
     queryFn: async ({ signal }) =>
       getStopsByNamesOrIds({ stopNames, numberOfDepartures, abortSignal: signal }),
-    refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
+    refetchInterval: config.digitransitApiProxy.refreshInterval, // Refetch every 60 seconds to keep the data up-to-date
   });
 };
 
@@ -106,5 +107,5 @@ export const useSuspenseBusStopsByNames = (stopNames: string[], numberOfDepartur
     queryKey: ['busStopsByNames', stopNames, numberOfDepartures],
     queryFn: async ({ signal }) =>
       getStopsByNamesOrIds({ stopNames, numberOfDepartures, abortSignal: signal }),
-    refetchInterval: 60 * 1000, // Refetch every 60 seconds to keep the data up-to-date
+    refetchInterval: config.digitransitApiProxy.refreshInterval, // Refetch every 60 seconds to keep the data up-to-date
   });
