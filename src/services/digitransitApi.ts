@@ -6,21 +6,9 @@ import {
   DigitransitStopsResponse,
   EmptyObject,
 } from '../schemas/digitransit.schema';
+import { config } from '../config/config';
 
-const env = import.meta.env;
-
-// Digitransit Routing API v2 endpoint (current, non-deprecated API)
-// Using GraphQL for querying nearest stops
-// In development, requests go through proxy at /api/digitransit
-// In production, use direct URL
-const isDevelopment = env.DEV;
-const DIGITRANSIT_GRAPHQL_URL = isDevelopment
-  ? '/api/digitransit'
-  : 'https://api.digitransit.fi/routing/v2/hsl/gtfs/v1';
-
-// Get API key from environment - required for Digitransit API (since 31.1.2024)
-// Register at https://portal-api.digitransit.fi/ to get your API key
-const DIGITRANSIT_API_KEY = env.VITE_DIGITRANSIT_API_KEY || '';
+const DIGITRANSIT_GRAPHQL_URL = config.digitransitApiProxy.apiUrl;
 
 const getNameOrIdQuery = (
   index: number,
@@ -86,10 +74,6 @@ export async function getStopsByNamesOrIds({
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-
-    if (DIGITRANSIT_API_KEY) {
-      headers['digitransit-subscription-key'] = DIGITRANSIT_API_KEY;
-    }
 
     const response = await axios.post(
       DIGITRANSIT_GRAPHQL_URL,
@@ -189,17 +173,6 @@ export async function getNearestBusStops({
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-
-    // Add API key as header (required for Digitransit production API)
-    if (DIGITRANSIT_API_KEY) {
-      headers['digitransit-subscription-key'] = DIGITRANSIT_API_KEY;
-    } else {
-      console.warn(
-        'Digitransit API key not found. Please set VITE_DIGITRANSIT_API_KEY environment variable. ' +
-          'Register at https://portal-api.digitransit.fi/ to get your API key. ' +
-          'Some features may not work without authentication.',
-      );
-    }
 
     const response = await axios.post(
       DIGITRANSIT_GRAPHQL_URL,
