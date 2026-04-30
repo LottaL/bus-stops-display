@@ -6,6 +6,11 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -21,6 +26,8 @@ jobs:
       VITE_CACHE_MAX_AGE_WEATHER: ${{ vars.VITE_CACHE_MAX_AGE_WEATHER }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
       - name: Use Node.js
         uses: actions/setup-node@v5
         with:
