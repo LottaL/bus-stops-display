@@ -1,0 +1,34 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      VITE_DIGITRANSIT_API_PROXY_URL: ${{ vars.VITE_DIGITRANSIT_API_PROXY_URL }}
+      VITE_WEATHER_API_URL: ${{ vars.VITE_WEATHER_API_URL }}
+      VITE_DEFAULT_LAT: ${{ vars.VITE_DEFAULT_LAT }}
+      VITE_DEFAULT_LON: ${{ vars.VITE_DEFAULT_LON }}
+      VITE_DEFAULT_ZOOM: ${{ vars.VITE_DEFAULT_ZOOM }}
+      VITE_BUS_REFRESH_INTERVAL: ${{ vars.VITE_BUS_REFRESH_INTERVAL }}
+      VITE_WEATHER_REFRESH_INTERVAL: ${{ vars.VITE_WEATHER_REFRESH_INTERVAL }}
+      VITE_CACHE_MAX_AGE_DIGITRANSIT: ${{ vars.VITE_CACHE_MAX_AGE_DIGITRANSIT }}
+      VITE_CACHE_MAX_AGE_WEATHER: ${{ vars.VITE_CACHE_MAX_AGE_WEATHER }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
