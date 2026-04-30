@@ -1,0 +1,42 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      VITE_DIGITRANSIT_API_PROXY_URL: ${{ vars.VITE_DIGITRANSIT_API_PROXY_URL }}
+      VITE_WEATHER_API_URL: ${{ vars.VITE_WEATHER_API_URL }}
+      VITE_DEFAULT_LAT: ${{ vars.VITE_DEFAULT_LAT }}
+      VITE_DEFAULT_LON: ${{ vars.VITE_DEFAULT_LON }}
+      VITE_DEFAULT_ZOOM: ${{ vars.VITE_DEFAULT_ZOOM }}
+      VITE_BUS_REFRESH_INTERVAL: ${{ vars.VITE_BUS_REFRESH_INTERVAL }}
+      VITE_WEATHER_REFRESH_INTERVAL: ${{ vars.VITE_WEATHER_REFRESH_INTERVAL }}
+      VITE_CACHE_MAX_AGE_DIGITRANSIT: ${{ vars.VITE_CACHE_MAX_AGE_DIGITRANSIT }}
+      VITE_CACHE_MAX_AGE_WEATHER: ${{ vars.VITE_CACHE_MAX_AGE_WEATHER }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ./dist
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v5

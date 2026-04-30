@@ -6,7 +6,6 @@ import Weather from './components/Weather';
 import { registerServiceWorker } from './services/pwaService';
 
 function App() {
-
   useEffect(() => {
     // Register service worker for PWA
     registerServiceWorker();
