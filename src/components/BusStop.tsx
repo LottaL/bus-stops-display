@@ -3,6 +3,7 @@ import {
   Avatar,
   Card,
   CardContent,
+  CircularProgress,
   Grid,
   Stack,
   Table,
@@ -18,8 +19,9 @@ import { getDistance } from '../utils/getDistance';
 
 interface BusStopProps {
   stop: Stop;
+  isFetching?: boolean;
 }
-export const BusStop = ({ stop }: BusStopProps) => {
+export const BusStop = ({ stop, isFetching }: BusStopProps) => {
   const { location: geoLocation } = useGeoLocation();
   const rows = stop.stoptimesWithoutPatterns.map((stoptime) => ({
     realTime: (
@@ -40,7 +42,7 @@ export const BusStop = ({ stop }: BusStopProps) => {
         <CardContent>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Typography variant="h5" component="div">
-              {stop.name}
+              {stop.name} {isFetching && <CircularProgress size={16} sx={{ ml: 1 }} />}
             </Typography>
             {geoLocation && (
               <Typography gutterBottom sx={{ color: 'text.secondary', fontSize: 14 }}>

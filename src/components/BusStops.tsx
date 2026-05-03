@@ -3,9 +3,9 @@ import { useBusStops } from '../hooks/useBusStops';
 import { BusStop } from './BusStop';
 
 export default function BusStops() {
-  const { data: stops, isFetching, error } = useBusStops();
+  const { data: stops, isLoading, isFetching, error } = useBusStops();
 
-  if (isFetching) {
+  if (isLoading) {
     return (
       <Grid size={12} justifyItems="center" className="stops-loading">
         <Grid>
@@ -33,7 +33,7 @@ export default function BusStops() {
   return (
     <Grid size={12} container direction="row" className="bus-stops" spacing={1}>
       {stops.map((stop) => (
-        <BusStop key={stop.gtfsId} stop={stop} />
+        <BusStop key={stop.gtfsId} stop={stop} isFetching={isFetching} />
       ))}
     </Grid>
   );
