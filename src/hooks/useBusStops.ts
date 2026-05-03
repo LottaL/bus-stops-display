@@ -54,6 +54,7 @@ export const useNearestBusStops = (
         limit: numberOfStops,
       }),
     refetchInterval: config.digitransitApiProxy.refreshInterval, // Refetch every 60 seconds to keep the data up-to-date
+    placeholderData: (previousData) => previousData,
   });
 export const useSuspenseNearestBusStops = (
   location: { lat: number; lon: number },
@@ -82,6 +83,7 @@ export const useBusStopsByIds = (gtfsIds: string[], numberOfDepartures: number) 
     queryFn: ({ signal }) =>
       getStopsByNamesOrIds({ gtfsIds, numberOfDepartures, abortSignal: signal }),
     refetchInterval: config.digitransitApiProxy.refreshInterval, // Refetch every 60 seconds to keep the data up-to-date
+    placeholderData: (previousData) => previousData,
   });
 
 export const useSuspenseBusStopsByIds = (gtfsIds: string[], numberOfDepartures: number) =>
@@ -99,6 +101,7 @@ export const useBusStopsByNames = (stopNames: string[], numberOfDepartures: numb
     queryFn: async ({ signal }) =>
       getStopsByNamesOrIds({ stopNames, numberOfDepartures, abortSignal: signal }),
     refetchInterval: config.digitransitApiProxy.refreshInterval, // Refetch every 60 seconds to keep the data up-to-date
+    placeholderData: (previousData) => previousData,
   });
 };
 

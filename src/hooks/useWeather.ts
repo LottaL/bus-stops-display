@@ -14,5 +14,6 @@ export const useWeather = (defaultLocation?: { lat: number; lon: number }) => {
     queryKey: ['weather', weatherLocation],
     queryFn: ({ signal }) => weatherLocation && getWeatherForecast(weatherLocation, signal),
     refetchInterval: 60 * 60 * 1000, // Refetch every 60 minutes to keep the data up-to-date
+    placeholderData: (previousData) => previousData,
   });
 };

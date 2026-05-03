@@ -4,9 +4,9 @@ import { WeatherSlot } from './WeatherSlot';
 import { getTimeAndDate } from '../utils/getLocalTimes';
 
 export default function Weather() {
-  const { data: weather, isFetching, error } = useWeather();
+  const { data: weather, isFetching, isLoading, error } = useWeather();
 
-  if (isFetching) {
+  if (isLoading) {
     return (
       <Grid size={12} justifyItems="center" className="weather-loading">
         <CircularProgress />
@@ -35,7 +35,8 @@ export default function Weather() {
               weather.slice(1).map((weatherPerHour, index) => (
                 <Stack key={index} direction="column" alignItems="center">
                   <Typography variant="h6" pb={1}>
-                    {getTimeAndDate(new Date(weatherPerHour.time), 'fi-FI').time}
+                    {getTimeAndDate(new Date(weatherPerHour.time), 'fi-FI').time}{' '}
+                    {isFetching && <CircularProgress size={16} sx={{ ml: 1 }} />}
                   </Typography>
                   <WeatherSlot key={index} weather={weatherPerHour} />
                 </Stack>
